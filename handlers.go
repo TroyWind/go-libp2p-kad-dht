@@ -5,6 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/libp2p/go-libp2p-kad-dht/dlog/dlkaddhtlog"
+	"go.uber.org/zap"
 	"time"
 
 	"github.com/libp2p/go-libp2p-core/peer"
@@ -23,6 +25,7 @@ import (
 type dhtHandler func(context.Context, peer.ID, *pb.Message) (*pb.Message, error)
 
 func (dht *IpfsDHT) handlerForMsgType(t pb.Message_MessageType) dhtHandler {
+	dlkaddhtlog.L.Debug("handlerForMsgType", zap.Any("dht.enableValues", dht.enableValues), zap.Any("dht.enableProviders", dht.enableProviders))
 	switch t {
 	case pb.Message_FIND_NODE:
 		return dht.handleFindPeer
@@ -52,6 +55,7 @@ func (dht *IpfsDHT) handlerForMsgType(t pb.Message_MessageType) dhtHandler {
 }
 
 func (dht *IpfsDHT) handleGetValue(ctx context.Context, p peer.ID, pmes *pb.Message) (_ *pb.Message, err error) {
+	dlkaddhtlog.L.Debug("handleGetValue", zap.Any("p", p))
 	// first, is there even a key?
 	k := pmes.GetKey()
 	if len(k) == 0 {
@@ -149,6 +153,7 @@ func cleanRecord(rec *recpb.Record) {
 
 // Store a value in this peer local storage
 func (dht *IpfsDHT) handlePutValue(ctx context.Context, p peer.ID, pmes *pb.Message) (_ *pb.Message, err error) {
+	dlkaddhtlog.L.Debug("handlePutValue", zap.Any("p", p))
 	if len(pmes.GetKey()) == 0 {
 		return nil, errors.New("handleGetValue but no key was provided")
 	}
@@ -248,11 +253,13 @@ func (dht *IpfsDHT) getRecordFromDatastore(dskey ds.Key) (*recpb.Record, error) 
 }
 
 func (dht *IpfsDHT) handlePing(_ context.Context, p peer.ID, pmes *pb.Message) (*pb.Message, error) {
+	dlkaddhtlog.L.Debug("handlePing", zap.Any("p", p))
 	logger.Debugf("%s Responding to ping from %s!\n", dht.self, p)
 	return pmes, nil
 }
 
 func (dht *IpfsDHT) handleFindPeer(ctx context.Context, from peer.ID, pmes *pb.Message) (_ *pb.Message, _err error) {
+	dlkaddhtlog.L.Debug("handleFindPeer", zap.Any("from", from))
 	resp := pb.NewMessage(pmes.GetType(), nil, pmes.GetClusterLevel())
 	var closest []peer.ID
 
@@ -307,6 +314,7 @@ func (dht *IpfsDHT) handleFindPeer(ctx context.Context, from peer.ID, pmes *pb.M
 }
 
 func (dht *IpfsDHT) handleGetProviders(ctx context.Context, p peer.ID, pmes *pb.Message) (_ *pb.Message, _err error) {
+	dlkaddhtlog.L.Debug("handleGetProviders", zap.Any("p", p))
 	key := pmes.GetKey()
 	if len(key) > 80 {
 		return nil, fmt.Errorf("handleGetProviders key size too large")
@@ -337,6 +345,7 @@ func (dht *IpfsDHT) handleGetProviders(ctx context.Context, p peer.ID, pmes *pb.
 }
 
 func (dht *IpfsDHT) handleAddProvider(ctx context.Context, p peer.ID, pmes *pb.Message) (_ *pb.Message, _err error) {
+	dlkaddhtlog.L.Debug("handleAddProvider", zap.Any("p", p))
 	key := pmes.GetKey()
 	if len(key) > 80 {
 		return nil, fmt.Errorf("handleAddProvider key size too large")

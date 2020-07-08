@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/libp2p/go-libp2p-kad-dht/dlog/dlkaddhtlog"
 	"math"
 	"math/rand"
 	"sync"
@@ -260,11 +261,15 @@ func makeDHT(ctx context.Context, h host.Host, cfg config) (*IpfsDHT, error) {
 		// In other words, we'll pollute the V2 network.
 		protocols = []protocol.ID{cfg.protocolPrefix + kad1}
 		serverProtocols = []protocol.ID{cfg.protocolPrefix + kad1}
+
+		dlkaddhtlog.L.Debug("makeDHT v1 mode", zap.Any("serverProtocols", serverProtocols))
 	} else {
 		// In v2 mode, serve on both protocols, but only
 		// query/accept peers in v2 mode.
 		protocols = []protocol.ID{cfg.protocolPrefix + kad2}
 		serverProtocols = []protocol.ID{cfg.protocolPrefix + kad2, cfg.protocolPrefix + kad1}
+
+		dlkaddhtlog.L.Debug("makeDHT v2 mode", zap.Any("serverProtocols", serverProtocols))
 	}
 
 	dht := &IpfsDHT{
@@ -375,6 +380,7 @@ func makeRoutingTable(dht *IpfsDHT, cfg config, maxLastSuccessfulOutboundThresho
 		cmgr.Unprotect(p, dhtUsefulTag)
 		cmgr.UntagPeer(p, kbucketTag)
 
+		dlkaddhtlog.L.Debug("fixRTIfNeeded")
 		// try to fix the RT
 		dht.fixRTIfNeeded()
 	}
@@ -395,18 +401,22 @@ func (dht *IpfsDHT) fixLowPeersRoutine(proc goprocess.Process) {
 	for {
 		select {
 		case <-dht.fixLowPeersChan:
+			dlkaddhtlog.L.Debug("dht <-dht.fixLowPeersChan")
 		case <-timer.C:
+			dlkaddhtlog.L.Debug("dht <-timer.C")
 		case <-proc.Closing():
 			return
 		}
 
 		if dht.routingTable.Size() > minRTRefreshThreshold {
+			dlkaddhtlog.L.Debug("dht.routingTable.Size() > minRTRefreshThreshold, no peer add to kbukect")
 			continue
 		}
 
 		// we try to add all peers we are connected to to the Routing Table
 		// in case they aren't already there.
 		for _, p := range dht.host.Network().Peers() {
+			dlkaddhtlog.L.Debug("add host.Network peer", zap.Any("p", p))
 			dht.peerFound(dht.Context(), p, false)
 		}
 
@@ -582,13 +592,16 @@ func (dht *IpfsDHT) putLocal(key string, rec *recpb.Record) error {
 // If we connect to a peer we already have in the RT but do not exchange a query (rare)
 //    Do Nothing.
 func (dht *IpfsDHT) peerFound(ctx context.Context, p peer.ID, queryPeer bool) {
+	dlkaddhtlog.L.Debug("peerFound", zap.Any("p", p))
 	if c := baseLogger.Check(zap.DebugLevel, "peer found"); c != nil {
 		c.Write(zap.String("peer", p.String()))
 	}
 	b, err := dht.validRTPeer(p)
 	if err != nil {
+		dlkaddhtlog.L.Debug("peerFound1", zap.Error(err))
 		logger.Errorw("failed to validate if peer is a DHT peer", "peer", p, "error", err)
 	} else if b {
+		dlkaddhtlog.L.Debug("peerFound2 TryAddPeer", zap.Bool("queryPeer", queryPeer))
 		newlyAdded, err := dht.routingTable.TryAddPeer(p, queryPeer)
 		if err != nil {
 			// peer not added.

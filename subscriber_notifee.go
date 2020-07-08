@@ -2,6 +2,8 @@ package dht
 
 import (
 	"fmt"
+	"github.com/libp2p/go-libp2p-kad-dht/dlog/dlkaddhtlog"
+	"go.uber.org/zap"
 
 	"github.com/libp2p/go-libp2p-core/event"
 	"github.com/libp2p/go-libp2p-core/network"
@@ -113,6 +115,7 @@ func handlePeerChangeEvent(dht *IpfsDHT, p peer.ID) {
 		logger.Errorf("could not check peerstore for protocol support: err: %s", err)
 		return
 	} else if valid {
+		dlkaddhtlog.L.Debug("handlePeerChangeEvent", zap.Any("p", p))
 		dht.peerFound(dht.ctx, p, false)
 		dht.fixRTIfNeeded()
 	} else {

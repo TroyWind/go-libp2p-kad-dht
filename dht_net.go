@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"github.com/libp2p/go-libp2p-kad-dht/dlog/dlkaddhtlog"
 	"io"
 	"sync"
 	"time"
@@ -74,6 +75,7 @@ func (dht *IpfsDHT) handleNewStream(s network.Stream) {
 
 // Returns true on orderly completion of writes (so we can Close the stream).
 func (dht *IpfsDHT) handleNewMessage(s network.Stream) bool {
+	dlkaddhtlog.L.Debug("IpfsDHT handleNewMessage", zap.Any("s addr", s.Conn().RemoteMultiaddr()))
 	ctx := dht.ctx
 	r := msgio.NewVarintReaderSize(s, network.MessageSizeMax)
 

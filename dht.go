@@ -597,6 +597,7 @@ func (dht *IpfsDHT) peerFound(ctx context.Context, p peer.ID, queryPeer bool) {
 		c.Write(zap.String("peer", p.String()))
 	}
 	b, err := dht.validRTPeer(p)
+	dlkaddhtlog.L.Debug("validRTPeer", zap.Any("b", b), zap.Error(err))
 	if err != nil {
 		dlkaddhtlog.L.Debug("peerFound1", zap.Error(err))
 		logger.Errorw("failed to validate if peer is a DHT peer", "peer", p, "error", err)

@@ -2,6 +2,8 @@ package dht
 
 import (
 	"bytes"
+	"github.com/libp2p/go-libp2p-kad-dht/dlog/dlkaddhtlog"
+	"go.uber.org/zap"
 	"net"
 	"sync"
 	"time"
@@ -78,6 +80,7 @@ var _ QueryFilterFunc = PublicQueryFilter
 // PublicRoutingTableFilter allows a peer to be added to the routing table if the connections to that peer indicate
 // that it is on a public network
 func PublicRoutingTableFilter(dht *IpfsDHT, conns []network.Conn) bool {
+	dlkaddhtlog.L.Debug("PublicRoutingTableFilter", zap.Any("len(conns)", len(conns)))
 	if len(conns) == 0 {
 		return false
 	}
@@ -86,10 +89,12 @@ func PublicRoutingTableFilter(dht *IpfsDHT, conns []network.Conn) bool {
 	id := conns[0].RemotePeer()
 	known := dht.peerstore.PeerInfo(id)
 	for _, a := range known.Addrs {
+		dlkaddhtlog.L.Debug("PublicRoutingTableFilter a", zap.Any("addr", a))
 		if !isRelayAddr(a) && isPublicAddr(a) {
 			return true
 		}
 	}
+	dlkaddhtlog.L.Debug("PublicRoutingTableFilter no public addr")
 
 	return false
 }

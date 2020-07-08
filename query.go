@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/libp2p/go-libp2p-kad-dht/dlog/dlkaddhtlog"
+	"go.uber.org/zap"
 	"math"
 	"sync"
 	"time"
@@ -150,6 +152,7 @@ func (dht *IpfsDHT) runQuery(ctx context.Context, target string, queryFn queryFn
 	// pick the K closest peers to the key in our Routing table.
 	targetKadID := kb.ConvertKey(target)
 	seedPeers := dht.routingTable.NearestPeers(targetKadID, dht.bucketSize)
+	dlkaddhtlog.L.Debug("ipfs dht runQuery", zap.Any("seedPeers", seedPeers))
 	if len(seedPeers) == 0 {
 		routing.PublishQueryEvent(ctx, &routing.QueryEvent{
 			Type:  routing.QueryError,

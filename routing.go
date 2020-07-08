@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/libp2p/go-libp2p-kad-dht/dlog/dlkaddhtlog"
+	"go.uber.org/zap"
 	"sync"
 	"time"
 
@@ -621,6 +623,7 @@ func (dht *IpfsDHT) FindPeer(ctx context.Context, id peer.ID) (_ peer.AddrInfo, 
 		return peer.AddrInfo{}, err
 	}
 
+	dlkaddhtlog.L.Debug("IpfsDHT FindPeer", zap.Any("p id", id))
 	logger.Debugw("finding peer", "peer", id)
 
 	// Check if were already connected to them
@@ -636,6 +639,7 @@ func (dht *IpfsDHT) FindPeer(ctx context.Context, id peer.ID) (_ peer.AddrInfo, 
 				ID:   p,
 			})
 
+			dlkaddhtlog.L.Debug("dht.findPeerSingle", zap.Any("from p", p), zap.Any("find p", id))
 			pmes, err := dht.findPeerSingle(ctx, p, id)
 			if err != nil {
 				logger.Debugf("error getting closer peers: %s", err)

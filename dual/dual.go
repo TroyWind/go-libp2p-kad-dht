@@ -4,6 +4,8 @@ package dual
 
 import (
 	"context"
+	"github.com/libp2p/go-libp2p-kad-dht/dlog/dlkaddhtlog"
+	"go.uber.org/zap"
 	"sync"
 
 	dht "github.com/libp2p/go-libp2p-kad-dht"
@@ -159,15 +161,18 @@ func (dht *DHT) FindProvidersAsync(ctx context.Context, key cid.Cid, count int) 
 // FindPeer searches for a peer with given ID
 // Note: with signed peer records, we can change this to short circuit once either DHT returns.
 func (dht *DHT) FindPeer(ctx context.Context, pid peer.ID) (peer.AddrInfo, error) {
+	dlkaddhtlog.L.Debug("dht FindPeer", zap.Any("pid", pid))
 	var wg sync.WaitGroup
 	wg.Add(2)
 	var wanInfo, lanInfo peer.AddrInfo
 	var wanErr, lanErr error
 	go func() {
+		dlkaddhtlog.L.Debug("WAN.FindPeer", zap.Any("pid", pid))
 		defer wg.Done()
 		wanInfo, wanErr = dht.WAN.FindPeer(ctx, pid)
 	}()
 	go func() {
+		dlkaddhtlog.L.Debug("LAN.FindPeer", zap.Any("pid", pid))
 		defer wg.Done()
 		lanInfo, lanErr = dht.LAN.FindPeer(ctx, pid)
 	}()

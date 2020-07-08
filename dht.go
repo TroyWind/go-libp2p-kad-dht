@@ -403,6 +403,7 @@ func (dht *IpfsDHT) fixLowPeersRoutine(proc goprocess.Process) {
 		select {
 		case <-dht.fixLowPeersChan:
 			dlkaddhtlog.L.Debug("dht <-dht.fixLowPeersChan")
+			// 只会触发一次
 		case <-timer.C:
 			dlkaddhtlog.L.Debug("dht <-timer.C")
 		case <-proc.Closing():

@@ -111,11 +111,12 @@ func (nn *subscriberNotifee) subscribe(proc goprocess.Process) {
 
 func handlePeerChangeEvent(dht *IpfsDHT, p peer.ID) {
 	valid, err := dht.validRTPeer(p)
+	dlkaddhtlog.L.Debug("handlePeerChangeEvent1", zap.Any("p", p), zap.Any("valid", valid), zap.Error(err))
 	if err != nil {
 		logger.Errorf("could not check peerstore for protocol support: err: %s", err)
 		return
 	} else if valid {
-		dlkaddhtlog.L.Debug("handlePeerChangeEvent", zap.Any("p", p))
+		dlkaddhtlog.L.Debug("handlePeerChangeEvent2", zap.Any("p", p))
 		dht.peerFound(dht.ctx, p, false)
 		dht.fixRTIfNeeded()
 	} else {

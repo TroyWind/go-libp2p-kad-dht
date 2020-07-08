@@ -399,6 +399,7 @@ func (dht *IpfsDHT) fixLowPeersRoutine(proc goprocess.Process) {
 	defer timer.Stop()
 
 	for {
+		dlkaddhtlog.L.Debug("fixLowPeersRoutine1")
 		select {
 		case <-dht.fixLowPeersChan:
 			dlkaddhtlog.L.Debug("dht <-dht.fixLowPeersChan")
@@ -420,11 +421,13 @@ func (dht *IpfsDHT) fixLowPeersRoutine(proc goprocess.Process) {
 			dht.peerFound(dht.Context(), p, false)
 		}
 
+		dlkaddhtlog.L.Debug("fixLowPeersRoutine2")
 		// TODO Active Bootstrapping
 		// We should first use non-bootstrap peers we knew of from previous
 		// snapshots of the Routing Table before we connect to the bootstrappers.
 		// See https://github.com/libp2p/go-libp2p-kad-dht/issues/387.
 		if dht.routingTable.Size() == 0 {
+			dlkaddhtlog.L.Debug("fixLowPeersRoutine3")
 			if len(dht.bootstrapPeers) == 0 {
 				// No point in continuing, we have no peers!
 				continue
@@ -455,12 +458,14 @@ func (dht *IpfsDHT) fixLowPeersRoutine(proc goprocess.Process) {
 			}
 		}
 
+		dlkaddhtlog.L.Debug("fixLowPeersRoutine4")
 		// if we still don't have peers in our routing table(probably because Identify hasn't completed),
 		// there is no point in triggering a Refresh.
 		if dht.routingTable.Size() == 0 {
 			continue
 		}
 
+		dlkaddhtlog.L.Debug("fixLowPeersRoutine5")
 		if dht.autoRefresh {
 			dht.rtRefreshManager.RefreshNoWait()
 		}

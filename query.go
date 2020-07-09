@@ -80,6 +80,7 @@ type lookupWithFollowupResult struct {
 // After the lookup is complete the query function is run (unless stopped) against all of the top K peers from the
 // lookup that have not already been successfully queried.
 func (dht *IpfsDHT) runLookupWithFollowup(ctx context.Context, target string, queryFn queryFn, stopFn stopFn) (*lookupWithFollowupResult, error) {
+	dlkaddhtlog.L.Debug("runLookupWithFollowup", zap.String("target", target))
 	// run the query
 	lookupRes, err := dht.runQuery(ctx, target, queryFn, stopFn)
 	if err != nil {
@@ -262,6 +263,7 @@ type queryUpdate struct {
 }
 
 func (q *query) run() {
+	dlkaddhtlog.L.Debug("query) run(lookup peers)")
 	pathCtx, cancelPath := context.WithCancel(q.ctx)
 	defer cancelPath()
 
@@ -429,6 +431,7 @@ func (q *query) queryPeer(ctx context.Context, ch chan<- *queryUpdate, p peer.ID
 		curInfo := q.dht.peerstore.PeerInfo(next.ID)
 		next.Addrs = append(next.Addrs, curInfo.Addrs...)
 
+		dlkaddhtlog.L.Debug("queryPeer", zap.Any("curInfo", curInfo))
 		// add their addresses to the dialer's peerstore
 		if q.dht.queryPeerFilter(q.dht, *next) {
 			q.dht.maybeAddAddrs(next.ID, next.Addrs, pstore.TempAddrTTL)

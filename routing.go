@@ -395,6 +395,7 @@ func (dht *IpfsDHT) refreshRTIfNoShortcut(key kb.ID, lookupRes *lookupWithFollow
 
 // Provide makes this node announce that it can provide a value for the given key
 func (dht *IpfsDHT) Provide(ctx context.Context, key cid.Cid, brdcst bool) (err error) {
+	dlkaddhtlog.L.Debug("IpfsDHT) Provide", zap.String("key", key.String()), zap.Bool("brdcst", brdcst), zap.Bool("dht.enableProviders", dht.enableProviders))
 	if !dht.enableProviders {
 		return routing.ErrNotSupported
 	} else if !key.Defined() {
@@ -458,6 +459,7 @@ func (dht *IpfsDHT) Provide(ctx context.Context, key cid.Cid, brdcst bool) (err 
 		go func(p peer.ID) {
 			defer wg.Done()
 			logger.Debugf("putProvider(%s, %s)", keyMH, p)
+			dlkaddhtlog.L.Debug("Provide peers info, to ClosestPeers", zap.String("to p", p.String()))
 			err := dht.sendMessage(ctx, p, mes)
 			if err != nil {
 				logger.Debug(err)
@@ -489,6 +491,7 @@ func (dht *IpfsDHT) makeProvRecord(key []byte) (*pb.Message, error) {
 
 // FindProviders searches until the context expires.
 func (dht *IpfsDHT) FindProviders(ctx context.Context, c cid.Cid) ([]peer.AddrInfo, error) {
+	dlkaddhtlog.L.Debug("FindProviders", zap.String("cid", c.String()), zap.Bool("dht.enableProviders", dht.enableProviders))
 	if !dht.enableProviders {
 		return nil, routing.ErrNotSupported
 	} else if !c.Defined() {
@@ -508,6 +511,7 @@ func (dht *IpfsDHT) FindProviders(ctx context.Context, c cid.Cid) ([]peer.AddrIn
 // completes. Note: not reading from the returned channel may block the query
 // from progressing.
 func (dht *IpfsDHT) FindProvidersAsync(ctx context.Context, key cid.Cid, count int) <-chan peer.AddrInfo {
+	dlkaddhtlog.L.Debug("FindProvidersAsync", zap.Any("dht.enableProviders", dht.enableProviders), zap.Any("key.Defined()", key.Defined()))
 	if !dht.enableProviders || !key.Defined() {
 		peerOut := make(chan peer.AddrInfo)
 		close(peerOut)

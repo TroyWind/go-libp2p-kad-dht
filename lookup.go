@@ -3,6 +3,8 @@ package dht
 import (
 	"context"
 	"fmt"
+	"github.com/libp2p/go-libp2p-kad-dht/dlog/dlkaddhtlog"
+	"go.uber.org/zap"
 	"strings"
 	"time"
 
@@ -72,6 +74,7 @@ func (lk loggableKeyBytes) String() string {
 // If the context is canceled, this function will return the context error along
 // with the closest K peers it has found so far.
 func (dht *IpfsDHT) GetClosestPeers(ctx context.Context, key string) (<-chan peer.ID, error) {
+	dlkaddhtlog.L.Debug("IpfsDHT) GetClosestPeers", zap.String("key", key))
 	if key == "" {
 		return nil, fmt.Errorf("can't lookup empty key")
 	}

@@ -157,7 +157,7 @@ func handleLocalReachabilityChangedEvent(dht *IpfsDHT, e event.EvtLocalReachabil
 func (dht *IpfsDHT) validRTPeer(p peer.ID) (bool, error) {
 	b, err := dht.peerstore.FirstSupportedProtocol(p, dht.protocolsStrs...)
 	if len(b) == 0 || err != nil {
-		dlkaddhtlog.L.Debug("validRTPeer", zap.Error(err))
+		dlkaddhtlog.L.Debug("validRTPeer", zap.Error(err), zap.Any("supported protocols len", len(b)))
 		return false, err
 	}
 

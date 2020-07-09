@@ -185,6 +185,7 @@ func New(ctx context.Context, h host.Host, options ...Option) (*IpfsDHT, error) 
 	}
 
 	if dht.mode == modeServer {
+		dlkaddhtlog.L.Debug("new dht use server mode")
 		if err := dht.moveToServerMode(); err != nil {
 			return nil, err
 		}

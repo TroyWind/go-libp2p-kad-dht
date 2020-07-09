@@ -3,6 +3,8 @@ package rtrefresh
 import (
 	"context"
 	"fmt"
+	"github.com/libp2p/go-libp2p-kad-dht/dlog/dlkaddhtlog"
+	"go.uber.org/zap"
 	"sync"
 	"time"
 
@@ -123,6 +125,7 @@ func (r *RtRefreshManager) loop() {
 
 	var refreshTickrCh <-chan time.Time
 	if r.enableAutoRefresh {
+		dlkaddhtlog.L.Debug("enableAutoRefresh, set a ticker")
 		err := r.doRefresh(true)
 		if err != nil {
 			logger.Warn("failed when refreshing routing table", err)
@@ -160,6 +163,7 @@ func (r *RtRefreshManager) loop() {
 			}
 		}
 
+		dlkaddhtlog.L.Debug("do peer refresh from kbucket")
 		// EXECUTE the refresh
 
 		// ping Routing Table peers that haven't been heard of/from in the interval they should have been.
@@ -170,9 +174,11 @@ func (r *RtRefreshManager) loop() {
 				wg.Add(1)
 				go func(ps kbucket.PeerInfo) {
 					defer wg.Done()
+					dlkaddhtlog.L.Debug("try connect to kbucket peer", zap.String("peer id", ps.Id.String()))
 					livelinessCtx, cancel := context.WithTimeout(r.ctx, peerPingTimeout)
 					if err := r.h.Connect(livelinessCtx, peer.AddrInfo{ID: ps.Id}); err != nil {
 						logger.Debugw("evicting peer after failed ping", "peer", ps.Id, "error", err)
+						dlkaddhtlog.L.Debug("evicting peer after failed ping", zap.String("peer id", ps.Id.String()), zap.Error(err))
 						r.rt.RemovePeer(ps.Id)
 					}
 					cancel()

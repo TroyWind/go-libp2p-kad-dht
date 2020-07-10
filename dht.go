@@ -260,6 +260,7 @@ func makeDHT(ctx context.Context, h host.Host, cfg config) (*IpfsDHT, error) {
 
 		dlkaddhtlog.L.Debug("makeDHT v2 mode", zap.Any("serverProtocols", serverProtocols))
 	}
+	dlkaddhtlog.L.Debug("make dht", zap.Any("protocols", protocols))
 
 	dht := &IpfsDHT{
 		datastore:              cfg.datastore,

@@ -86,7 +86,7 @@ func PublicRoutingTableFilter(dht *IpfsDHT, conns []network.Conn) bool {
 	}
 
 	// todo 只用于测试，实际还是要过滤调局域网IP
-	//return true
+	return true
 	// Do we have a public address for this peer?
 	id := conns[0].RemotePeer()
 	known := dht.peerstore.PeerInfo(id)

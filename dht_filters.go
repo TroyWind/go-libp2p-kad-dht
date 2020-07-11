@@ -66,12 +66,17 @@ func PublicQueryFilter(_ *IpfsDHT, ai peer.AddrInfo) bool {
 		return false
 	}
 
+	// todo 需要注释掉
+	return true
+
 	var hasPublicAddr bool
 	for _, a := range ai.Addrs {
 		if !isRelayAddr(a) && isPublicAddr(a) {
 			hasPublicAddr = true
 		}
 	}
+	dlkaddhtlog.L.Debug("PublicQueryFilter", zap.Any("p info", ai), zap.Any("filter result", hasPublicAddr))
+
 	return hasPublicAddr
 }
 

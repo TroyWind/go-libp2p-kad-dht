@@ -586,7 +586,7 @@ func (dht *IpfsDHT) putLocal(key string, rec *recpb.Record) error {
 // If we connect to a peer we already have in the RT but do not exchange a query (rare)
 //    Do Nothing.
 func (dht *IpfsDHT) peerFound(ctx context.Context, p peer.ID, queryPeer bool) {
-	dlkaddhtlog.L.Debug("peerFound", zap.Any("p", p))
+	dlkaddhtlog.L.Debug("peerFound", zap.Any("p", p), zap.Bool("queryPeer", queryPeer))
 	if c := baseLogger.Check(zap.DebugLevel, "peer found"); c != nil {
 		c.Write(zap.String("peer", p.String()))
 	}
@@ -596,7 +596,7 @@ func (dht *IpfsDHT) peerFound(ctx context.Context, p peer.ID, queryPeer bool) {
 		dlkaddhtlog.L.Debug("peerFound1", zap.Error(err))
 		logger.Errorw("failed to validate if peer is a DHT peer", "peer", p, "error", err)
 	} else if b {
-		dlkaddhtlog.L.Debug("peerFound2 TryAddPeer", zap.Bool("queryPeer", queryPeer))
+		dlkaddhtlog.L.Debug("peerFound2 TryAddPeer", zap.Any("p", p), zap.Bool("queryPeer", queryPeer))
 		newlyAdded, err := dht.routingTable.TryAddPeer(p, queryPeer)
 		if err != nil {
 			// peer not added.

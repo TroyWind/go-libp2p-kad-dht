@@ -158,7 +158,7 @@ func (dht *IpfsDHT) validRTPeer(p peer.ID) (bool, error) {
 	// 这里 protocol 很可能不会支持 KAD protocol(/fil/kad/testnet/kad/1.0.0)，该节点很可能就不会被加到K桶中
 	b, err := dht.peerstore.FirstSupportedProtocol(p, dht.protocolsStrs...)
 	pProtocols, gerr := dht.peerstore.GetProtocols(p)
-	dlkaddhtlog.L.Debug("validRTPeer--", zap.Error(err), zap.Any("supported protocols len", len(b)), zap.Any("dht.protocolsStrs", dht.protocolsStrs), zap.Any("peer protocols", pProtocols), zap.Any("pid", p))
+	dlkaddhtlog.L.Debug("validRTPeer--", zap.Any("p", p), zap.Error(err), zap.Any("supported protocols len", len(b)), zap.Any("dht.protocolsStrs", dht.protocolsStrs), zap.Any("peer protocols", pProtocols), zap.Any("pid", p))
 	if len(b) == 0 || err != nil {
 		if gerr != nil {
 			dlkaddhtlog.L.Error("failed get peer protocols", zap.Error(gerr))

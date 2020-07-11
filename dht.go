@@ -586,7 +586,17 @@ func (dht *IpfsDHT) putLocal(key string, rec *recpb.Record) error {
 // If we connect to a peer we already have in the RT but do not exchange a query (rare)
 //    Do Nothing.
 func (dht *IpfsDHT) peerFound(ctx context.Context, p peer.ID, queryPeer bool) {
-	dlkaddhtlog.L.Debug("peerFound", zap.Any("p", p), zap.Bool("queryPeer", queryPeer))
+	dlkaddhtlog.L.Debug("peerFound", zap.Any("p", p), zap.Bool("queryPeer", queryPeer), zap.Any("addr info", dht.peerstore.Addrs(p)))
+
+	// todo remove this
+	tmpS, err := dht.host.NewStream(ctx, p, "/fil/hello/1.0.0")
+	if err != nil {
+		dlkaddhtlog.L.Debug("peerFound new stream failed", zap.Error(err))
+	} else {
+		dlkaddhtlog.L.Debug("peerFound new stream", zap.Any("remote addr", tmpS.Conn().RemoteMultiaddr()))
+		_ = tmpS.Close()
+	}
+
 	if c := baseLogger.Check(zap.DebugLevel, "peer found"); c != nil {
 		c.Write(zap.String("peer", p.String()))
 	}

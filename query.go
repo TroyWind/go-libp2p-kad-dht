@@ -248,6 +248,7 @@ func (q *query) constructLookupResult(target kb.ID) *lookupWithFollowupResult {
 		peerState[p] = state
 		peers = append(peers, p)
 	}
+	dlkaddhtlog.L.Debug("constructLookupResult", zap.Any("GetClosestNotUnreachable", qp))
 
 	// get the top K overall peers
 	sortedPeers := kb.SortClosestPeers(peers, target)

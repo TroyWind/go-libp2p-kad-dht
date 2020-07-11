@@ -1,6 +1,8 @@
 package qpeerset
 
 import (
+	"github.com/libp2p/go-libp2p-kad-dht/dlog/dlkaddhtlog"
+	"go.uber.org/zap"
 	"math/big"
 	"sort"
 
@@ -141,6 +143,7 @@ func (qp *QueryPeerset) GetWaitingPeers() (result []peer.ID) {
 func (qp *QueryPeerset) GetClosestNotUnreachable(count int) (result []peer.ID) {
 	qp.sort()
 	for _, p := range qp.all {
+		dlkaddhtlog.L.Debug("GetClosestNotUnreachable", zap.Any("p", p.id), zap.Any("p.state", p.state))
 		if p.state != PeerUnreachable {
 			result = append(result, p.id)
 		}

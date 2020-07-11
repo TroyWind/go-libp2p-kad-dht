@@ -80,7 +80,7 @@ type lookupWithFollowupResult struct {
 // After the lookup is complete the query function is run (unless stopped) against all of the top K peers from the
 // lookup that have not already been successfully queried.
 func (dht *IpfsDHT) runLookupWithFollowup(ctx context.Context, target string, queryFn queryFn, stopFn stopFn) (*lookupWithFollowupResult, error) {
-	dlkaddhtlog.L.Debug("runLookupWithFollowup", zap.String("target", target))
+	dlkaddhtlog.L.Debug("runLookupWithFollowup")
 	// run the query
 	lookupRes, err := dht.runQuery(ctx, target, queryFn, stopFn)
 	if err != nil {
@@ -93,11 +93,13 @@ func (dht *IpfsDHT) runLookupWithFollowup(ctx context.Context, target string, qu
 	// by stateless query functions (e.g. GetClosestPeers and therefore Provide and PutValue)
 	queryPeers := make([]peer.ID, 0, len(lookupRes.peers))
 	for i, p := range lookupRes.peers {
+		dlkaddhtlog.L.Debug("lookupRes", zap.Any("p", p.String()), zap.Any("lookupRes.state[i]", lookupRes.state[i]))
 		if state := lookupRes.state[i]; state == qpeerset.PeerHeard || state == qpeerset.PeerWaiting {
+			dlkaddhtlog.L.Debug("lookupRes add to queryPeers", zap.Any("p", p.String()), zap.Any("state", state))
 			queryPeers = append(queryPeers, p)
 		}
 	}
-
+	dlkaddhtlog.L.Debug("runLookupWithFollowup2", zap.Any("len(lookupRes.peers)", len(lookupRes.peers)), zap.Any("len(queryPeers)", len(queryPeers)))
 	if len(queryPeers) == 0 {
 		return lookupRes, nil
 	}
@@ -153,7 +155,7 @@ func (dht *IpfsDHT) runQuery(ctx context.Context, target string, queryFn queryFn
 	// pick the K closest peers to the key in our Routing table.
 	targetKadID := kb.ConvertKey(target)
 	seedPeers := dht.routingTable.NearestPeers(targetKadID, dht.bucketSize)
-	dlkaddhtlog.L.Debug("ipfs dht runQuery", zap.String("target", target), zap.Any("seedPeers", seedPeers))
+	dlkaddhtlog.L.Debug("ipfs dht runQuery", zap.Any("from seedPeers", seedPeers))
 	if len(seedPeers) == 0 {
 		routing.PublishQueryEvent(ctx, &routing.QueryEvent{
 			Type:  routing.QueryError,
@@ -431,7 +433,7 @@ func (q *query) queryPeer(ctx context.Context, ch chan<- *queryUpdate, p peer.ID
 		curInfo := q.dht.peerstore.PeerInfo(next.ID)
 		next.Addrs = append(next.Addrs, curInfo.Addrs...)
 
-		dlkaddhtlog.L.Debug("queryPeer", zap.Any("curInfo", curInfo))
+		dlkaddhtlog.L.Debug("queryPeer at range newPeers", zap.Any("cur peer info", curInfo))
 		// add their addresses to the dialer's peerstore
 		if q.dht.queryPeerFilter(q.dht, *next) {
 			q.dht.maybeAddAddrs(next.ID, next.Addrs, pstore.TempAddrTTL)

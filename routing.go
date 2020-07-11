@@ -638,6 +638,7 @@ func (dht *IpfsDHT) FindPeer(ctx context.Context, id peer.ID) (_ peer.AddrInfo, 
 	}
 
 	lookupRes, err := dht.runLookupWithFollowup(ctx, string(id),
+		// 该函数就是去对应的seed peer那取其它节点的连接信息
 		func(ctx context.Context, p peer.ID) ([]*peer.AddrInfo, error) {
 			// For DHT query command
 			routing.PublishQueryEvent(ctx, &routing.QueryEvent{
@@ -652,6 +653,7 @@ func (dht *IpfsDHT) FindPeer(ctx context.Context, id peer.ID) (_ peer.AddrInfo, 
 				return nil, err
 			}
 			peers := pb.PBPeersToPeerInfos(pmes.GetCloserPeers())
+			dlkaddhtlog.L.Debug("find peer result", zap.Any("from p", p), zap.Any("peers", peers))
 
 			// For DHT query command
 			routing.PublishQueryEvent(ctx, &routing.QueryEvent{
@@ -678,6 +680,7 @@ func (dht *IpfsDHT) FindPeer(ctx context.Context, id peer.ID) (_ peer.AddrInfo, 
 			// and therefore the peer would fail the query. The fact that a peer that is returned can be a non-DHT
 			// server peer and is not identified as such is a bug.
 			dialedPeerDuringQuery = lookupRes.state[i] != qpeerset.PeerHeard
+			dlkaddhtlog.L.Debug("check peer dialed", zap.Any("from p", p), zap.Any("dialedPeerDuringQuery", dialedPeerDuringQuery))
 			break
 		}
 	}

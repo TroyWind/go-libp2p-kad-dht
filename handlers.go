@@ -272,6 +272,7 @@ func (dht *IpfsDHT) handleFindPeer(ctx context.Context, from peer.ID, pmes *pb.M
 	if targetPid == dht.self {
 		closest = []peer.ID{dht.self}
 	} else {
+		// 这里把临近的都找出来
 		closest = dht.betterPeersToQuery(pmes, from, dht.bucketSize)
 
 		// Never tell a peer about itself.
@@ -289,6 +290,7 @@ func (dht *IpfsDHT) handleFindPeer(ctx context.Context, from peer.ID, pmes *pb.M
 					break
 				}
 			}
+			// 如果临近的没有目标节点，则把该节点加入查找列表
 			if !found {
 				closest = append(closest, targetPid)
 			}
